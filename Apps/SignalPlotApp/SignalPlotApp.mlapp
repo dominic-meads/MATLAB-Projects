@@ -1,3 +1,6 @@
+% adds, subtracts, or modulates two diferent signals. 
+% User can select signal attributes such as frequency, DC offset, and amplitude
+
 classdef SignalPlotApp < matlab.apps.AppBase
 
     % Properties that correspond to app components
