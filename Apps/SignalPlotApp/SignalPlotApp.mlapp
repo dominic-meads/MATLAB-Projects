@@ -1,0 +1,227 @@
+classdef SignalPlotApp < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                     matlab.ui.Figure
+        ListBox                      matlab.ui.control.ListBox
+        Frequency_2                  matlab.ui.control.NumericEditField
+        FrequencyHzEditFieldLabel_2  matlab.ui.control.Label
+        DC_2                         matlab.ui.control.NumericEditField
+        DCLabel_2                    matlab.ui.control.Label
+        Amplitude_2                  matlab.ui.control.NumericEditField
+        AmplitudeEditFieldLabel_2    matlab.ui.control.Label
+        Signal2Label                 matlab.ui.control.Label
+        NoiseAmplitude_2             matlab.ui.control.Slider
+        Signal1Label                 matlab.ui.control.Label
+        NoiseAmplitude               matlab.ui.control.Slider
+        NoiseAmplitudeSliderLabel    matlab.ui.control.Label
+        DC                           matlab.ui.control.NumericEditField
+        DCLabel                      matlab.ui.control.Label
+        Durations                    matlab.ui.control.NumericEditField
+        DurationsEditFieldLabel      matlab.ui.control.Label
+        Frequency                    matlab.ui.control.NumericEditField
+        FrequencyHzEditFieldLabel    matlab.ui.control.Label
+        Amplitude                    matlab.ui.control.NumericEditField
+        AmplitudeEditFieldLabel      matlab.ui.control.Label
+        PlotButton                   matlab.ui.control.Button
+        UIAxes                       matlab.ui.control.UIAxes
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            a1 = app.Amplitude.Value; 
+            f1 = app.Frequency.Value;
+            T1 = app.Durations.Value;
+            n1 = app.NoiseAmplitude.Value;
+            k1 = app.DC.Value;
+            fs1 = 50*f1;
+            Ts1 = 1/fs1;
+            t1 = 0:Ts1:T1;
+            ns1 = n1*randn(1,length(t1));
+            x1 = k1 + a1*cos(2*pi*f1*t1) + ns1;
+
+            a2 = app.Amplitude_2.Value; 
+            f2 = app.Frequency_2.Value;
+            n2 = app.NoiseAmplitude_2.Value;
+            k2 = app.DC_2.Value;
+            ns2 = n2*randn(1,length(t1));
+            x2 = k2 + a2*cos(2*pi*f2*t1) + ns2;
+
+            switch app.ListBox.Value
+                case 'Add'
+                    x3 = x1+x2;
+                case 'Subtract'
+                    x3 = x1-x2;
+                case 'Modulate'
+                    x3 = x1.*x2;
+                otherwise
+                    x3 = zeros(size(x1));
+            end;
+
+
+            plot(app.UIAxes,t1,x1,'b',t1,x2,'r',t1,x3,'g');
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 693 522];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, 'Signal Plot')
+            xlabel(app.UIAxes, 'Time (s)')
+            ylabel(app.UIAxes, 'Amplitude')
+            zlabel(app.UIAxes, 'Z')
+            app.UIAxes.Position = [35 205 571 298];
+
+            % Create PlotButton
+            app.PlotButton = uibutton(app.UIFigure, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.Position = [575 22 100 23];
+            app.PlotButton.Text = 'Plot';
+
+            % Create AmplitudeEditFieldLabel
+            app.AmplitudeEditFieldLabel = uilabel(app.UIFigure);
+            app.AmplitudeEditFieldLabel.HorizontalAlignment = 'right';
+            app.AmplitudeEditFieldLabel.Position = [39 143 58 22];
+            app.AmplitudeEditFieldLabel.Text = 'Amplitude';
+
+            % Create Amplitude
+            app.Amplitude = uieditfield(app.UIFigure, 'numeric');
+            app.Amplitude.Position = [112 143 100 22];
+
+            % Create FrequencyHzEditFieldLabel
+            app.FrequencyHzEditFieldLabel = uilabel(app.UIFigure);
+            app.FrequencyHzEditFieldLabel.HorizontalAlignment = 'right';
+            app.FrequencyHzEditFieldLabel.Position = [9 110 88 22];
+            app.FrequencyHzEditFieldLabel.Text = 'Frequency (Hz)';
+
+            % Create Frequency
+            app.Frequency = uieditfield(app.UIFigure, 'numeric');
+            app.Frequency.Position = [112 109 100 22];
+
+            % Create DurationsEditFieldLabel
+            app.DurationsEditFieldLabel = uilabel(app.UIFigure);
+            app.DurationsEditFieldLabel.HorizontalAlignment = 'right';
+            app.DurationsEditFieldLabel.Position = [562 89 68 22];
+            app.DurationsEditFieldLabel.Text = 'Duration (s)';
+
+            % Create Durations
+            app.Durations = uieditfield(app.UIFigure, 'numeric');
+            app.Durations.Position = [562 61 100 22];
+
+            % Create DCLabel
+            app.DCLabel = uilabel(app.UIFigure);
+            app.DCLabel.HorizontalAlignment = 'right';
+            app.DCLabel.Position = [72 177 25 22];
+            app.DCLabel.Text = 'DC';
+
+            % Create DC
+            app.DC = uieditfield(app.UIFigure, 'numeric');
+            app.DC.Position = [112 177 100 22];
+
+            % Create NoiseAmplitudeSliderLabel
+            app.NoiseAmplitudeSliderLabel = uilabel(app.UIFigure);
+            app.NoiseAmplitudeSliderLabel.HorizontalAlignment = 'right';
+            app.NoiseAmplitudeSliderLabel.Position = [4 40 95 22];
+            app.NoiseAmplitudeSliderLabel.Text = 'Noise  Amplitude';
+
+            % Create NoiseAmplitude
+            app.NoiseAmplitude = uislider(app.UIFigure);
+            app.NoiseAmplitude.Limits = [0 5];
+            app.NoiseAmplitude.Position = [120 49 150 3];
+
+            % Create Signal1Label
+            app.Signal1Label = uilabel(app.UIFigure);
+            app.Signal1Label.FontWeight = 'bold';
+            app.Signal1Label.Position = [18 184 51 22];
+            app.Signal1Label.Text = 'Signal 1';
+
+            % Create NoiseAmplitude_2
+            app.NoiseAmplitude_2 = uislider(app.UIFigure);
+            app.NoiseAmplitude_2.Limits = [0 5];
+            app.NoiseAmplitude_2.Position = [379 42 150 3];
+
+            % Create Signal2Label
+            app.Signal2Label = uilabel(app.UIFigure);
+            app.Signal2Label.FontWeight = 'bold';
+            app.Signal2Label.Position = [277 177 51 22];
+            app.Signal2Label.Text = 'Signal 2';
+
+            % Create AmplitudeEditFieldLabel_2
+            app.AmplitudeEditFieldLabel_2 = uilabel(app.UIFigure);
+            app.AmplitudeEditFieldLabel_2.HorizontalAlignment = 'right';
+            app.AmplitudeEditFieldLabel_2.Position = [298 136 58 22];
+            app.AmplitudeEditFieldLabel_2.Text = 'Amplitude';
+
+            % Create Amplitude_2
+            app.Amplitude_2 = uieditfield(app.UIFigure, 'numeric');
+            app.Amplitude_2.Position = [371 136 100 22];
+
+            % Create DCLabel_2
+            app.DCLabel_2 = uilabel(app.UIFigure);
+            app.DCLabel_2.HorizontalAlignment = 'right';
+            app.DCLabel_2.Position = [331 170 25 22];
+            app.DCLabel_2.Text = 'DC';
+
+            % Create DC_2
+            app.DC_2 = uieditfield(app.UIFigure, 'numeric');
+            app.DC_2.Position = [371 170 100 22];
+
+            % Create FrequencyHzEditFieldLabel_2
+            app.FrequencyHzEditFieldLabel_2 = uilabel(app.UIFigure);
+            app.FrequencyHzEditFieldLabel_2.HorizontalAlignment = 'right';
+            app.FrequencyHzEditFieldLabel_2.Position = [269 102 88 22];
+            app.FrequencyHzEditFieldLabel_2.Text = 'Frequency (Hz)';
+
+            % Create Frequency_2
+            app.Frequency_2 = uieditfield(app.UIFigure, 'numeric');
+            app.Frequency_2.Position = [372 101 100 22];
+
+            % Create ListBox
+            app.ListBox = uilistbox(app.UIFigure);
+            app.ListBox.Items = {'Add', 'Subtract', 'Modulate'};
+            app.ListBox.Position = [523 136 129 56];
+            app.ListBox.Value = 'Add';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = SignalPlotApp
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
