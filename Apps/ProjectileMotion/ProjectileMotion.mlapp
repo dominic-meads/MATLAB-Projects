@@ -1,3 +1,5 @@
+% Plots the trajectory and max height of an object given its initial hieght, intial velocity, and angle of launch. 
+
 classdef ProjectileMotion < matlab.apps.AppBase
 
     % Properties that correspond to app components
