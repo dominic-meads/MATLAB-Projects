@@ -1,0 +1,205 @@
+classdef ProjectileMotion < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                      matlab.ui.Figure
+        TotalDistance                 matlab.ui.control.EditField
+        HorizontalDistanceMaxHieghtLabel_2  matlab.ui.control.Label
+        HorizontalDistanceMaxHieghtLabel  matlab.ui.control.Label
+        HorizontalDistance            matlab.ui.control.EditField
+        MaxHeight                     matlab.ui.control.EditField
+        MaxHeightftEditFieldLabel     matlab.ui.control.Label
+        ResultsLabel                  matlab.ui.control.Label
+        InputsLabel                   matlab.ui.control.Label
+        IntialVelocity                matlab.ui.control.NumericEditField
+        IntialVelocityftsLabel        matlab.ui.control.Label
+        InitalAngleDeg                matlab.ui.control.NumericEditField
+        InitalAngleDegEditFieldLabel  matlab.ui.control.Label
+        IntialHeight                  matlab.ui.control.NumericEditField
+        IntialHeightftLabel           matlab.ui.control.Label
+        PlotButton                    matlab.ui.control.Button
+        UIAxes                        matlab.ui.control.UIAxes
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            % Inputs
+            h0 = app.IntialHeight.Value;
+            v0 = app.IntialVelocity.Value;
+            theta0 = app.InitalAngleDeg.Value;
+            
+            % Constants
+            g = 32.174; % gravity
+            interval = 0.005; % sampling interval
+            
+            % convert angle to rad
+            theta0_rad = theta0*pi/180;
+            
+            % calculate time in air and create time vector
+            t_total = (v0*sin(theta0_rad) + sqrt((v0*sin(theta0_rad))^2 + 2*g*h0))/g;
+            t = 0:interval:t_total;  % 1 ms intervals
+            
+            % calculate x and y
+            x = v0*cos(theta0_rad)*t;
+            y = h0 + v0*sin(theta0_rad)*t - 0.5*g*t.^2;
+            
+            % max height (at time th and horizontal distance xh)
+            h_max = max(y);
+            th = (v0*sin(theta0_rad))/g;
+            xh = v0*cos(theta0_rad)*th;
+            xmax = max(x);
+            
+            % animation
+            for k = 1:length(t)
+                pause(interval);
+                h = plot(app.UIAxes,x(k),y(k),'b.');
+                hold(app.UIAxes, 'on' );
+            end
+            hold(app.UIAxes, 'on' );
+            stem(app.UIAxes,xh,h_max,'r');
+
+            % Output Results
+            app.MaxHeight.Value = num2str(h_max);
+            app.HorizontalDistance.Value = num2str(xh);
+            app.TotalDistance.Value = num2str(x(end));
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 635 480];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, 'Projectile Motion')
+            xlabel(app.UIAxes, 'Distance (ft)')
+            ylabel(app.UIAxes, 'Height (ft)')
+            zlabel(app.UIAxes, 'Z')
+            app.UIAxes.Position = [71 149 495 311];
+
+            % Create PlotButton
+            app.PlotButton = uibutton(app.UIFigure, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.Position = [251 53 76 23];
+            app.PlotButton.Text = 'Plot';
+
+            % Create IntialHeightftLabel
+            app.IntialHeightftLabel = uilabel(app.UIFigure);
+            app.IntialHeightftLabel.HorizontalAlignment = 'right';
+            app.IntialHeightftLabel.Position = [22 97 86 22];
+            app.IntialHeightftLabel.Text = 'Intial Height (ft)';
+
+            % Create IntialHeight
+            app.IntialHeight = uieditfield(app.UIFigure, 'numeric');
+            app.IntialHeight.Position = [123 97 100 22];
+
+            % Create InitalAngleDegEditFieldLabel
+            app.InitalAngleDegEditFieldLabel = uilabel(app.UIFigure);
+            app.InitalAngleDegEditFieldLabel.HorizontalAlignment = 'right';
+            app.InitalAngleDegEditFieldLabel.Position = [10 54 100 22];
+            app.InitalAngleDegEditFieldLabel.Text = 'Inital Angle (Deg.)';
+
+            % Create InitalAngleDeg
+            app.InitalAngleDeg = uieditfield(app.UIFigure, 'numeric');
+            app.InitalAngleDeg.Position = [125 54 100 22];
+
+            % Create IntialVelocityftsLabel
+            app.IntialVelocityftsLabel = uilabel(app.UIFigure);
+            app.IntialVelocityftsLabel.HorizontalAlignment = 'right';
+            app.IntialVelocityftsLabel.Position = [7 12 102 22];
+            app.IntialVelocityftsLabel.Text = 'Intial Velocity (ft/s)';
+
+            % Create IntialVelocity
+            app.IntialVelocity = uieditfield(app.UIFigure, 'numeric');
+            app.IntialVelocity.Position = [124 12 100 22];
+
+            % Create InputsLabel
+            app.InputsLabel = uilabel(app.UIFigure);
+            app.InputsLabel.FontSize = 14;
+            app.InputsLabel.FontWeight = 'bold';
+            app.InputsLabel.Position = [10 128 47 22];
+            app.InputsLabel.Text = 'Inputs';
+
+            % Create ResultsLabel
+            app.ResultsLabel = uilabel(app.UIFigure);
+            app.ResultsLabel.FontSize = 14;
+            app.ResultsLabel.FontWeight = 'bold';
+            app.ResultsLabel.Position = [381 118 56 22];
+            app.ResultsLabel.Text = 'Results';
+
+            % Create MaxHeightftEditFieldLabel
+            app.MaxHeightftEditFieldLabel = uilabel(app.UIFigure);
+            app.MaxHeightftEditFieldLabel.HorizontalAlignment = 'right';
+            app.MaxHeightftEditFieldLabel.FontColor = [1 0 0];
+            app.MaxHeightftEditFieldLabel.Position = [474 96 84 22];
+            app.MaxHeightftEditFieldLabel.Text = 'Max Height (ft)';
+
+            % Create MaxHeight
+            app.MaxHeight = uieditfield(app.UIFigure, 'text');
+            app.MaxHeight.FontColor = [1 0 0];
+            app.MaxHeight.Position = [579 96 45 22];
+
+            % Create HorizontalDistance
+            app.HorizontalDistance = uieditfield(app.UIFigure, 'text');
+            app.HorizontalDistance.FontColor = [1 0 0];
+            app.HorizontalDistance.Position = [579 55 45 22];
+
+            % Create HorizontalDistanceMaxHieghtLabel
+            app.HorizontalDistanceMaxHieghtLabel = uilabel(app.UIFigure);
+            app.HorizontalDistanceMaxHieghtLabel.HorizontalAlignment = 'right';
+            app.HorizontalDistanceMaxHieghtLabel.FontColor = [1 0 0];
+            app.HorizontalDistanceMaxHieghtLabel.Position = [346 54 214 22];
+            app.HorizontalDistanceMaxHieghtLabel.Text = 'Horizontal Distance  @  Max Height (ft)';
+
+            % Create HorizontalDistanceMaxHieghtLabel_2
+            app.HorizontalDistanceMaxHieghtLabel_2 = uilabel(app.UIFigure);
+            app.HorizontalDistanceMaxHieghtLabel_2.HorizontalAlignment = 'right';
+            app.HorizontalDistanceMaxHieghtLabel_2.FontColor = [0 0 1];
+            app.HorizontalDistanceMaxHieghtLabel_2.Position = [460 14 98 22];
+            app.HorizontalDistanceMaxHieghtLabel_2.Text = 'Total Distance (ft)';
+
+            % Create TotalDistance
+            app.TotalDistance = uieditfield(app.UIFigure, 'text');
+            app.TotalDistance.FontColor = [0 0 1];
+            app.TotalDistance.Position = [579 14 44 22];
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = ProjectileMotion
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
