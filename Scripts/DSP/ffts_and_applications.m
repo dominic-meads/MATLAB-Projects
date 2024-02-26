@@ -5,6 +5,13 @@ close all
 clear
 clc
 
+%% TODO
+%
+% ALL SECTIONS
+% FIX FFT MAGNITUDE (DIVIDE BY LENGTH OF SIGNAL)
+%
+
+
 %% 1). FFT of Signal With Different Window Lengths
 %
 %  x(t) = 3sin(2pi*0.5t) + 2sin(2pi*2.5t) 
